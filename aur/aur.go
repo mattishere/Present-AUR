@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"present-aur/utils"
+	"strconv"
 	"time"
 )
 
@@ -83,21 +84,31 @@ func SearchPackages(pkg string, inverse bool) {
 		fmt.Println(utils.Prefix + "Unable to find any packages in the AUR based on your search query '" + pkg + "'")
 		os.Exit(0)
 	}
+
+	count := strconv.Itoa(results.ResultsCount)
+
+	resultsText := "\n------------------------------------\n"+utils.Green + count +  utils.Reset+" results found in the AUR for the search query '"+pkg+utils.Reset+"'\n"
+
 	if inverse == true {
+		fmt.Println(resultsText)
+		for _, result := range results.Results {
+			fmt.Println(packageInfo(result))
+		}
+	} else {
 		for i := results.ResultsCount - 1; i >= 0; i-- {
 			result := results.Results[i]
-			fmt.Println(utils.Blue + result.Name + utils.Yellow + "\n- description: " + utils.Reset + result.Description + utils.Yellow + "\n- version: " + utils.Reset + result.Version + "\n")
+			fmt.Println(packageInfo(result))
 		}
-		fmt.Println("\n------------------------------------\n" + utils.Green, results.ResultsCount, utils.Reset+"results found in the AUR for the search query '"+pkg+utils.Reset+"'\n")
-	} else {
-		fmt.Println(utils.Green, results.ResultsCount, utils.Reset+"results found in the AUR for the search query '"+pkg+utils.Reset+"'\n------------------------------------\n")
-		for _, result := range results.Results {
-			fmt.Println(utils.Blue + result.Name + utils.Yellow + "\n- description: " + utils.Reset + result.Description + utils.Yellow + "\n- version: " + utils.Reset + result.Version + "\n")
-		}
+		fmt.Println(resultsText)
 	}
 }
 
 // private helper functions
+
+func packageInfo(result Package) string {
+	return utils.Blue + result.Name + utils.Yellow + "\n- description: " + utils.Reset + result.Description + utils.Yellow + "\n- version: " + utils.Reset + result.Version + "\n"	
+}
+
 func install(pkg string) {
 	results := AurSearch(pkg, "info")
 	if results.ResultsCount == 0 {
